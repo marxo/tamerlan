@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# URL of the file to download
+# URL of the APK to download
 FILE_URL="https://github.com/marxo/tamerlan/raw/refs/heads/main/app-release.apk"
-# Local filename extracted from URL
 FILE_NAME=$(basename "$FILE_URL")
 
 # Check if adb is installed
@@ -13,7 +12,36 @@ fi
 
 echo "adb is installed."
 
-# Download the file using wget if available, otherwise curl
+# Check for connected devices
+echo "Checking for connected devices..."
+devices=$(adb devices | awk 'NR>1 && $2=="device"{print $1}')
+
+# Wait for devices if none are found
+while [ -z "$devices" ]; do
+    echo "No devices detected. Waiting for a device to be connected..."
+    sleep 5
+    devices=$(adb devices | awk 'NR>1 && $2=="device"{print $1}')
+done
+
+# If multiple devices, let user pick
+device_count=$(echo "$devices" | wc -l)
+if [ "$device_count" -gt 1 ]; then
+    echo "Multiple devices detected:"
+    select chosen_device in $devices; do
+        if [ -n "$chosen_device" ]; then
+            device="$chosen_device"
+            break
+        else
+            echo "Invalid selection. Try again."
+        fi
+    done
+else
+    device="$devices"
+fi
+
+echo "Using device: $device"
+
+# Download APK
 if command -v wget &> /dev/null; then
     echo "Downloading $FILE_URL using wget..."
     wget -O "$FILE_NAME" "$FILE_URL"
@@ -21,23 +49,22 @@ elif command -v curl &> /dev/null; then
     echo "Downloading $FILE_URL using curl..."
     curl -o "$FILE_NAME" "$FILE_URL"
 else
-    echo "Error: Neither wget nor curl is available for downloading files."
+    echo "Error: Neither wget nor curl is available."
     exit 1
 fi
 
-# Check if the download succeeded
+# Verify download
 if [ ! -f "$FILE_NAME" ]; then
-    echo "Error: File download failed."
+    echo "Error: Download failed."
     exit 1
 fi
 
 echo "Download complete: $FILE_NAME"
 
-# Install the APK using adb
-echo "Installing $FILE_NAME via adb..."
-adb install -r "$FILE_NAME"
+# Install APK
+echo "Installing $FILE_NAME on device $device..."
+adb -s "$device" install -r "$FILE_NAME"
 
-# Check if adb install succeeded
 if [ $? -eq 0 ]; then
     echo "Installation successful."
 else
