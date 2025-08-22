@@ -2,7 +2,7 @@
 
 # === CONFIG ===
 BASE_URL="https://raw.githubusercontent.com/marxo/tamerlan/main"
-APK_NAME="bi.apk"
+APK_NAME="app.apk"
 SHA256_FILE="sha256sum.txt"
 # ==============
 
