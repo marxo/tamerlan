@@ -87,11 +87,19 @@ fi
 # === Verify checksum ===
 if [ "$SKIP_SHA256" = false ]; then
     echo "Verifying checksum for $FILE_NAME..."
-    if ! grep " $FILE_NAME" "$SHA256_FILE" | sha256sum -c -; then
+
+    expected=$(grep " $FILE_NAME" "$SHA256_FILE" | awk '{print $1}')
+    actual=$(sha256sum "$FILE_NAME" | awk '{print $1}')
+
+    echo "Expected: $expected"
+    echo "Actual:   $actual"
+
+    if [ "$expected" != "$actual" ]; then
         echo "Error: SHA256 checksum verification failed!"
         rm -f "$FILE_NAME"
         exit 1
     fi
+
     echo "Checksum verified successfully."
 else
     echo "Skipping checksum verification (user requested)."
