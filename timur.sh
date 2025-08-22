@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # URL of the APK to download
-FILE_URL="https://raw.githubusercontent.com/marxo/tamerlan/raw/refs/heads/main/app-release.apk"
+FILE_URL="https://raw.githubusercontent.com/marxo/tamerlan/main/app-release.apk"
 FILE_NAME=$(basename "$FILE_URL")
 
 # Check if adb is installed
